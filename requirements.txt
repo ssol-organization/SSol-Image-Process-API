@@ -1,0 +1,7 @@
+Flask
+requests
+opencv-python
+numpy
+matplotlib
+zbar-py
+pyzbar  
