@@ -61,31 +61,19 @@ def get_info():
                 i+=5
             i+=1
 
-        qrcode = cv2.imread("img/5.png")
+        qrcode = cv2.imread("img/4.png")
         # Find barcodes and QR codes
         decodedObjects = pyzbar.decode(qrcode)
         
         # Print results
         data = []
         for obj in decodedObjects:
-            data.append(obj.data)
-        
+            text = str(obj.data)[2:2]+str(obj.data)[2:]
+            data.append(str(text)[:-1])
         
         return jsonify(ImageSize = [w, h], VigaPosition = pos_viga, ColorsRGB = colors_viga, QRCodes = data)
     except:
         return "Erro ao extrair informações da viga."
-
-    #exemplos de informações geradas
-    
-
-    #genApoio1 = 0;
-    #genApoio2 = 2;
-    #carga1 = 20;
-    #posicaoApoio1=4;
-
-    #retorna, em json, as informações adquiridas
-    #return jsonify({"genApoio1": genApoio1, "genApoio2":genApoio2,"carga1":carga1,"posicaoApoio1":posicaoApoio1})
-    
 
 if __name__ == '__main__':
     app.run(host="0.0.0.0", debug=True)
