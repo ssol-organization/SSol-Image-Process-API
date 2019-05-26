@@ -1,8 +1,9 @@
 Flask
+gunicorn
 requests
 opencv-python
 numpy
 matplotlib
 zbar-py
 pyzbar 
-gunicorn
+
