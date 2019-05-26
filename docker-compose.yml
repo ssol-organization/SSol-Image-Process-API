@@ -2,7 +2,7 @@ version: '3.5'
 services:
         web: 
             build: .
-            command: [sh, -c, "pip3 install -r requirements.txt && apt-get update && apt-get install -y build-essential libzbar-dev && python3.6 app.py"]
+            command: [sh, -c, "pip3 install -r requirements.txt && apt-get update && apt-get install -y build-essential libzbar-dev && gunicorn app:app"]
             ports: 
                 - '5000:5000'
             volumes: 
