@@ -1,6 +1,7 @@
 import cv2
 import numpy as np
 import pyzbar.pyzbar as pyzbar
+import copy
 
 def detect_viga(img):
     h, w = img.shape[:2]
@@ -18,37 +19,51 @@ def detect_viga(img):
         y2 = int(y0 - 1000 * (a))
 
         cv2.line(img, (x1, y1), (x2, y2), (0, 0, 255), 2)
-        cv2.line(img, (x1, y1 - 20), (x2, y2 - 20), (0, 0, 255), 2)
-        cv2.line(img, (2, y1), (2, y1 - 20), (0, 0, 255), 2)
-        cv2.line(img, (w - 2, y1), (w - 2, y1 - 20), (0, 0, 255), 2)
+        cv2.line(img, (x1, y1 + 25), (x2, y2 + 25), (0, 0, 255), 2)
+        cv2.line(img, (2, y1), (2, y1 + 25), (0, 0, 255), 2)
+        cv2.line(img, (h - 2, y1), (h - 2, y1 + 25), (0, 0, 255), 2)
     # demarcação da viga
     xi = 0
     xf = w
     yi = y2
-    yf = y2 - 20
+    yf = y2 + int(h/12)
+
+
     return [xi, xf, yi, yf]
 
 def detect_viga_colors(img, xi, xf, yi, yf):
     h, w = img.shape[:2]
-    i = 1
+    i = 0
     colors_viga = {}
-    while i < (w - 4):
+    while i < (w - 2):
         color = [abs(int(img[yi - 10][i + 1][0])), abs(int(img[yi - 10][i + 1][1])),
                  abs(int(img[yi - 10][i + 1][2]))]
         dif0 = abs(abs(int(img[yi - 10][i][0])) - abs(int(img[yi - 10][i + 1][0])))
         dif1 = abs(abs(int(img[yi - 10][i][1])) - abs(int(img[yi - 10][i + 1][1])))
         dif2 = abs(abs(int(img[yi - 10][i][2])) - abs(int(img[yi - 10][i + 1][2])))
-        if ((dif0 >= 8 and dif1 >= 8) or (dif0 >= 8 and dif2 >= 8) or (dif1 >= 8 and dif2 >= 8)):
-            colors_viga[str(i)] = color
-            i += 5
+        if ((dif0 >= 60 and dif1 >= 60) or (dif0 >= 60 and dif2 >= 60) or (dif1 >= 60 and dif2 >= 60)):
+            colors_viga[int(i)] = color
+            i+=5
         i += 1
     return colors_viga
 
-def detect_qr_codes(qrcode):
-    decodedObjects = pyzbar.decode(qrcode)
-    # Print results
-    data = []
-    for obj in decodedObjects:
-        text = str(obj.data)[2:2] + str(obj.data)[2:]
-        data.append(str(text)[:-1])
-    return data
+def detect_qr_codes(qrcode, ranges):
+    cut = {}
+    h, w = qrcode.shape[:2]
+    our_ranges = [0] + ranges + [w-1]+[-1]
+    position = 0
+    for r in range(0, len(our_ranges) - 1):
+        qr = copy.copy(qrcode)
+        for i in range(0, w):
+            if (i < our_ranges[position] or i > our_ranges[position + 1]):
+                for j in range(0, h):
+                    qr[j][i] = 0, 0, 0
+        decodedObjects = pyzbar.decode(qr)
+        if decodedObjects == []:
+            data = None
+        else:
+            text = str(decodedObjects[0].data)[2:2] + str(decodedObjects[0].data)[2:]
+            data = str(text)[:-1]
+        cut[our_ranges[position]] = data
+        position += 1
+    return cut

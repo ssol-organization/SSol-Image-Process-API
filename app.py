@@ -13,17 +13,19 @@ app = Flask(__name__)
 def get_info():
     try:
         #a leitura da imagem deve ser substituída pela imagem que será enviada como parâmetro
-        image = cv2.imread('img/viga400px.jpg')
+        image = cv2.imread('img/viga_com_pesos_1000px.png')[:,:,::-1]
         h, w = image.shape[:2]
 
-        img = image
-        pos_viga = detect_viga(img)
+        pos_viga = detect_viga(image)
 
-        img2 = img[:,:,::-1]
-        colors_viga = detect_viga_colors(img2, pos_viga[0], pos_viga[1], pos_viga[2], pos_viga[3])
 
-        qr_img = cv2.imread("img/4.png")
-        qr_data = detect_qr_codes(qr_img)
+        colors_viga = detect_viga_colors(image, pos_viga[0], pos_viga[1], pos_viga[2], pos_viga[3])
+
+        ranges = []
+        for key in colors_viga:
+            ranges.append(key)
+
+        qr_data = detect_qr_codes(image, ranges)
 
         
         return jsonify(ImageSize = [w, h], VigaPosition = pos_viga, ColorsRGB = colors_viga, QRCodes = qr_data)
