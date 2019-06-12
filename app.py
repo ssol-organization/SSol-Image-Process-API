@@ -13,7 +13,7 @@ app = Flask(__name__)
 def get_info():
     try:
         #a leitura da imagem deve ser substituída pela imagem que será enviada como parâmetro
-        image = cv2.imread('img/viga_com_pesos_1000px.png')[:,:,::-1]
+        image = cv2.imread('img/viga_com_mais_pesos_1000px.png')[:,:,::-1]
         h, w = image.shape[:2]
 
         pos_viga = detect_viga(image)
