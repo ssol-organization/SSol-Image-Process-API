@@ -67,6 +67,8 @@ def detect_qr_codes(qrcode, ranges):
                 text = str(code[0])[2:2] + str(code[0])[2:]
                 data.append(str(text)[:-1])
         cut[our_ranges[position]] = data
+        print(our_ranges[position])
         data = []
         position += 1
+
     return cut
