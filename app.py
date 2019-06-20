@@ -5,6 +5,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from image_processing.detect import *
+from image_processing.classify import *
+from image_processing.interpret import *
 
 app = Flask(__name__)
 
@@ -13,22 +15,26 @@ app = Flask(__name__)
 def get_info():
     try:
         #a leitura da imagem deve ser substituída pela imagem que será enviada como parâmetro
-        image = cv2.imread('img/viga_com_mais_pesos_1000px.png')[:,:,::-1]
+        image = cv2.imread('img/triangular_10.png')
         h, w = image.shape[:2]
 
         pos_viga = detect_viga(image)
+        # plt.imshow(image)
 
+        ranges = detect_viga_colors(image, pos_viga[0], pos_viga[1], pos_viga[2], pos_viga[3])
 
-        colors_viga = detect_viga_colors(image, pos_viga[0], pos_viga[1], pos_viga[2], pos_viga[3])
-
-        ranges = []
-        for key in colors_viga:
-            ranges.append(key)
+        # plt.imshow(image)
 
         qr_data = detect_qr_codes(image, ranges)
 
-        
-        return jsonify(ImageSize = [w, h], VigaPosition = pos_viga, ColorsRGB = colors_viga, QRCodes = qr_data)
+        infos = []
+        for t in qr_data:
+            infos.append(classify(qr_data[t], t))
+
+        pesos_apoios = interpret(infos)
+        print(pesos_apoios)
+
+        return jsonify(apoios = {"apoios_tipo1_positions":pesos_apoios[0], "apoios_tipo2_positions":pesos_apoios[1]}, cargas = {"pontuais":pesos_apoios[2], "distribuidas":pesos_apoios[3],"triangulares":pesos_apoios[4]})
     except:
         return "Erro ao extrair informações da viga."
 
