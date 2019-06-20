@@ -49,6 +49,7 @@ def detect_viga_colors(img, xi, xf, yi, yf):
 
 def detect_qr_codes(qrcode, ranges):
     cut = {}
+    data = []
     h, w = qrcode.shape[:2]
     our_ranges = [0] + ranges + [w-1]+[-1]
     position = 0
@@ -60,10 +61,14 @@ def detect_qr_codes(qrcode, ranges):
                     qr[j][i] = 0, 0, 0
         decodedObjects = pyzbar.decode(qr)
         if decodedObjects == []:
-            data = None
+            data = []
         else:
-            text = str(decodedObjects[0].data)[2:2] + str(decodedObjects[0].data)[2:]
-            data = str(text)[:-1]
+            for code in decodedObjects:
+                text = str(code[0])[2:2] + str(code[0])[2:]
+                data.append(str(text)[:-1])
         cut[our_ranges[position]] = data
+        print(our_ranges[position])
+        data = []
         position += 1
+
     return cut
