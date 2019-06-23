@@ -15,14 +15,15 @@ app = Flask(__name__)
 def get_info():
     try:
         #a leitura da imagem deve ser substituída pela imagem que será enviada como parâmetro
-        image = cv2.imread('img/triangular_10.png')
+        image = cv2.imread('img/capture (3).jpg')
+        print(image)
         h, w = image.shape[:2]
 
         pos_viga = detect_viga(image)
         # plt.imshow(image)
 
         ranges = detect_viga_colors(image, pos_viga[0], pos_viga[1], pos_viga[2], pos_viga[3])
-
+        print(ranges)
         # plt.imshow(image)
 
         qr_data = detect_qr_codes(image, ranges)
