@@ -1,14 +1,36 @@
-from flask import Flask, jsonify
+from flask import Flask, jsonify, send_file, request
 
 import cv2
 import numpy as np
 import matplotlib.pyplot as plt
+import io
 
 from image_processing.detect import *
 from image_processing.classify import *
 from image_processing.interpret import *
 
 app = Flask(__name__)
+
+
+
+@app.route('/receive', methods=['GET','POST'])
+def receive_image():
+  
+  #Retorna erro caso o parametro "foto" não seja recebido ou seja recebido vazio
+  if not 'foto' in request.files or not request.files.get('foto'):
+    return jsonify({'erro':'nenhum arquivo'}),400
+
+  #Imagem recebida, na variavel "file"
+  file = request.files.get('foto')
+
+  #Imagem salva em variável estática "img"
+  img = io.BytesIO()
+  file.save(img)
+  img.seek(0)
+
+  #Imagem retornada, para fins de teste. Pode retornar simplesmente "sucesso" quando o código for finalizado
+  return send_file(img,mimetype='image/png')
+
 
 @app.route('/', methods=['GET'])
 
