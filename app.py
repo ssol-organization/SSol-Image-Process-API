@@ -1,10 +1,9 @@
 from flask import Flask, jsonify, send_file, request
 
-import cv2
-import numpy as np
-import matplotlib.pyplot as plt
+from image_processing.pre_processing import *
+from image_processing.process_viga import *
+from image_processing.decode import *
 import io
-
 from image_processing.detect import *
 from image_processing.classify import *
 from image_processing.interpret import *
@@ -36,28 +35,22 @@ def receive_image():
 
 def get_info():
     try:
-        #a leitura da imagem deve ser substituída pela imagem que será enviada como parâmetro
-        image = cv2.imread('img/capture (3).jpg')
-        print(image)
-        h, w = image.shape[:2]
+        image = cv2.imread('img/pontual_4_new.png')[:, :, ::-1]
+        image = pre_processing(image)
+        data = decode(image)
+        viga = find_viga(data)
+        viga_reta = find_reta(data)
+        image = process_image(viga_reta, image)
+        all_data = decode_all(image)
+        apoio1, apoio2, pontual, distribuida, triangular = classify(all_data)
 
-        pos_viga = detect_viga(image)
-        # plt.imshow(image)
+        viga_data = interpret_viga(viga)
+        apoios_data = interpret_apoios(apoio1 + apoio2)
+        triangulares_data = interpret_triangular(triangular)
+        pontuais_data = interpret_pontual(pontual)
+        distribuidas_data = interpret_distribuida(distribuida)
 
-        ranges = detect_viga_colors(image, pos_viga[0], pos_viga[1], pos_viga[2], pos_viga[3])
-        print(ranges)
-        # plt.imshow(image)
-
-        qr_data = detect_qr_codes(image, ranges)
-
-        infos = []
-        for t in qr_data:
-            infos.append(classify(qr_data[t], t))
-
-        pesos_apoios = interpret(infos)
-        print(pesos_apoios)
-
-        return jsonify(apoios = {"apoios_tipo1_positions":pesos_apoios[0], "apoios_tipo2_positions":pesos_apoios[1]}, cargas = {"pontuais":pesos_apoios[2], "distribuidas":pesos_apoios[3],"triangulares":pesos_apoios[4]})
+        return jsonify(posicao_viga = viga_data, apoios_primeiro_genero = apoios_data[0], apoios_segundo_genero = apoios_data[1], cargas_pontuais = pontuais_data, cargas_distribuidas = distribuidas_data, cargas_triangulares = triangulares_data)
     except:
         return "Erro ao extrair informações da viga."
 
