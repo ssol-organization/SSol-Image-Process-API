@@ -49,8 +49,28 @@ def get_info():
         triangulares_data = interpret_triangular(triangular)
         pontuais_data = interpret_pontual(pontual)
         distribuidas_data = interpret_distribuida(distribuida)
+        dict_apoio2 = {}
+        posicao_i = {}
+        posicao_f = {}
+        tipo1 = {}
+        tipo2 = {}
+        tipo1["tipo"] = 0
+        tipo2["tipo"] = 1
+        apoios = []
+        for a in apoio2:
+            apoios.append([tipo2, {"posicao_i": a[3][0][0]}, {"posicao_f": a[3][3][0]}])
+            apoios = copy.copy(apoios)
+            print(apoios[-1])
+            posicao_i.clear()
+            posicao_f.clear()
+        for a in apoio1:
+            apoios.append([tipo1, {"posicao_i": a[3][0][0]}, {"posicao_f": a[3][3][0]}])
+            apoios = copy.copy(apoios)
+            print(apoios[-1])
+            posicao_i.clear()
+            posicao_f.clear()
 
-        return jsonify(posicao_viga = viga_data, apoios_primeiro_genero = apoios_data[0], apoios_segundo_genero = apoios_data[1], cargas_pontuais = pontuais_data, cargas_distribuidas = distribuidas_data, cargas_triangulares = triangulares_data)
+        return jsonify(posicao_viga = viga_data, apoios = apoios, cargas_pontuais = pontuais_data, cargas_distribuidas = distribuidas_data, cargas_triangulares = triangulares_data)
     except:
         return "Erro ao extrair informações da viga."
 
