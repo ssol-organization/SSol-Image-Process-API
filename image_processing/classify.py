@@ -1,21 +1,18 @@
-# padrão de retorno:
-# [tipo, modulo, posicao_i]
-# posicao i é a posição inicial do objeto, como as distancias sao constantes nao é necessário posicao f pra objetos
-
-def classify(data, position):
-    result = []
-    for i in data:
-        info = i.split('\n')
-        t = info[0].split('t:')[1]
-        w = None if info[1].split('w:')[1] == '0' else int(info[1].split('w:')[1])
-        if 'apoio' in t:
-            result.append(classify_apoios(t, position))
-        else:
-            result.append(classify_cargas(t, w, position))
-    return result
-        
-def classify_apoios(t, position):
-    return [t, None, position] if t == 'apoio1' else [t, None, position]
-    
-def classify_cargas(t, w, position):
-    return [t, w, position]
+def classify(data):
+    pontual = []
+    distribuida = []
+    triangular = []
+    apoio1 = []
+    apoio2 = []
+    for d in data:
+        if 'pontual' in str(d[0]):
+            pontual.append(d)
+        elif 'distr' in str(d[0]):
+            distribuida.append(d)
+        elif 'triang' in str(d[0]):
+            triangular.append(d)
+        elif 'apoio 1' in str(d[0]):
+            apoio1.append(d)
+        elif 'apoio 2' in str(d[0]):
+            apoio2.append(d)
+    return apoio1, apoio2, pontual, distribuida, triangular

@@ -6,4 +6,5 @@ numpy
 matplotlib
 zbar-py
 pyzbar 
-
+imutils
+Pillow
