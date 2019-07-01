@@ -3,7 +3,8 @@ from flask import Flask, jsonify, send_file, request
 from image_processing.pre_processing import *
 from image_processing.process_viga import *
 from image_processing.decode import *
-import io
+import io, base64
+from PIL import Image
 from image_processing.detect import *
 from image_processing.classify import *
 from image_processing.interpret import *
@@ -12,30 +13,61 @@ app = Flask(__name__)
 
 
 
+#global que guarda a imagem
+stringIm = ""
+
 @app.route('/receive', methods=['GET','POST'])
 def receive_image():
   
   #Retorna erro caso o parametro "foto" não seja recebido ou seja recebido vazio
   if not 'foto' in request.files or not request.files.get('foto'):
     return jsonify({'erro':'nenhum arquivo'}),400
-
-  #Imagem recebida, na variavel "file"
+  
+  #define que utilizaremos essa global
+  global stringIm
+  
+  #recebe o arquivo
   file = request.files.get('foto')
 
   #Imagem salva em variável estática "img"
   img = io.BytesIO()
   file.save(img)
   img.seek(0)
+   
+  #grava a imagem na nossa variavel global em b64
+  stringIm = base64.b64encode(img.read())
 
   #Imagem retornada, para fins de teste. Pode retornar simplesmente "sucesso" quando o código for finalizado
-  return send_file(img,mimetype='image/png')
+  return "Sucesso"
+
+
+
+@app.route('/current_image', methods=['GET'])
+def see_image():
+  
+    global stringIm
+    
+    #Convertendo nossa string b64 para um arquivo de imagem    
+    imagemF = io.BytesIO(base64.b64decode(stringIm))
+
+    imagemF.seek(0)    
+
+    return send_file(imagemF, mimetype="image/png")  
+
 
 
 @app.route('/', methods=['GET'])
 
 def get_info():
     try:
-        image = cv2.imread('img/pontual_4_new.png')[:, :, ::-1]
+
+        #conversão da string para imagem e salvamento em diretorio temporario para leitura posterior
+        imagemF = io.BytesIO(base64.b64decode(stringIm))
+        pilImage = Image.open(imagemF)
+        pilImage.save('/tmp/current.png')
+        
+        image = cv2.imread('/tmp/current.png')[:, :, ::-1]
+        #image = cv2.imread('img/pontual_4_new.png')[:, :, ::-1]
         image = pre_processing(image)
         data = decode(image)
         viga = find_viga(data)
