@@ -35,7 +35,7 @@ def receive_image():
 
 def get_info():
     try:
-        image = cv2.imread('img/triangular_10_new.png')[:, :, ::-1]
+        image = cv2.imread('img/pontual_4_new.png')[:, :, ::-1]
         image = pre_processing(image)
         data = decode(image)
         viga = find_viga(data)
@@ -55,10 +55,11 @@ def get_info():
         tipo2["tipo"] = 1
         apoios = []
         for a in apoio2:
-            apoios.append([tipo2, {"posicao_i": a[3][0][0]}, {"posicao_f": a[3][3][0]}])
+            print(a)
+            apoios.append([tipo2, {"posicao_i": a[3][0][0]}, {"posicao_f": a[3][2][0]}])
             apoios = copy.copy(apoios)
         for a in apoio1:
-            apoios.append([tipo1, {"posicao_i": a[3][0][0]}, {"posicao_f": a[3][3][0]}])
+            apoios.append([tipo1, {"posicao_i": a[3][0][0]}, {"posicao_f": a[3][2][0]}])
             apoios = copy.copy(apoios)
         cargas_pontuais = []
         for c in pontuais_data:
