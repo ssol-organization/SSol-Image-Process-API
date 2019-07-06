@@ -1,28 +1,39 @@
-import numpy as np
 import pyzbar.pyzbar as pyzbar
-import imutils
-
-
 def decode(image):
-    qr_data = pyzbar.decode(image)
-    return qr_data
 
+    triangulares = []
+    pontuais = []
+    distribuidas = []
+    apoios1 = []
+    apoios2 = []
 
-def distance(a, b):
-    return ((a[0] - b[0]) ** 2 + ((b[1] - a[1]) ** 2)) ** 1 / 2
+    h, w = image.shape[:2]
+    image = image[:, :, ::-1]
+    s = int(w / 320)
+    i = 0
+    j = 1
+    last_size = 0
+    all_data = []
+    while (j < w): #divide a imagem em vários pedaços para facilitar a detecção dos qr codes
+        data = pyzbar.decode(image[:, i:j])
+        if data != []:
+            all_data.append(data)
+        if len(all_data) > last_size:
+            i = j
+            last_size = len(all_data)
+        j += s
 
+    for qr in all_data:
+        a = str(qr[0]).replace("b\'", '').replace("\'", '').split(', ')
+        if 'apoio1' in a[0]:
+            apoios1.append(a)
+        elif 'apoio2' in a[0]:
+            apoios2.append(a)
+        elif 'triangular' in a[0]:
+            triangulares.append(a)
+        elif 'distribuida' in a[0]:
+            distribuidas.append(a)
+        elif 'pontual' in a[0]:
+            pontuais.append(a)
 
-def process_image(viga, image):
-    if viga[0][1] != viga[1][1]:  # verifico de a altura dos qr codes é a mesma
-        angle = np.sin(distance(viga[0][0], viga[0][1]))
-        image = imutils.rotate(image, -angle)
-    return image
-
-
-def decode_all(image):
-    results = decode(image)
-    results_a = []
-    for r in results:
-        if not 'viga inicio' in str(r[0]) and not 'viga fim' in str(r[0]):
-            results_a.append(r)
-    return results_a
+    return apoios1, apoios2, pontuais, distribuidas, triangulares
