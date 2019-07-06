@@ -1,10 +1,11 @@
 from flask import Flask, jsonify, send_file, request
-
+from os import environ 
 from image_processing.decode import *
 import io, base64
 from PIL import Image
 from image_processing.format import *
 import cv2
+import requests
 
 app = Flask(__name__)
 
@@ -34,9 +35,34 @@ def receive_image():
   #grava a imagem na nossa variavel global em b64
   stringIm = base64.b64encode(img.read())
 
-  #Imagem retornada, para fins de teste. Pode retornar simplesmente "sucesso" quando o código for finalizado
   return "Sucesso"
 
+
+@app.route('/espreceive', methods=['GET','POST'])
+def receive_esp():
+  
+  #define que utilizaremos essa global
+  global stringIm
+
+  if environ.get("espurl"):
+    URL = environ.get("espurl") 
+  else:
+    URL = "https://www.skikelly.com/sf/liveview/?rand=123456789"
+  
+  #recebe a imagem
+  response = requests.get(URL)
+  img = Image.open(io.BytesIO(response.content))
+
+  #Converte para PNG
+  img.save('/tmp/temp.png')  
+  pilImage = Image.open('/tmp/temp.png')
+  
+  #grava a imagem na nossa variavel global em b64
+  buffered = io.BytesIO()
+  pilImage.save(buffered, format="PNG")
+  stringIm = base64.b64encode(buffered.getvalue())
+
+  return "Sucesso"
 
 
 @app.route('/current_image', methods=['GET'])
