@@ -1,13 +1,11 @@
 from flask import Flask, jsonify, send_file, request
-
-from image_processing.pre_processing import *
-from image_processing.process_viga import *
+from os import environ 
 from image_processing.decode import *
 import io, base64
 from PIL import Image
-from image_processing.detect import *
-from image_processing.classify import *
-from image_processing.interpret import *
+from image_processing.format import *
+import cv2
+import requests
 
 app = Flask(__name__)
 
@@ -37,9 +35,34 @@ def receive_image():
   #grava a imagem na nossa variavel global em b64
   stringIm = base64.b64encode(img.read())
 
-  #Imagem retornada, para fins de teste. Pode retornar simplesmente "sucesso" quando o código for finalizado
   return "Sucesso"
 
+
+@app.route('/espreceive', methods=['GET','POST'])
+def receive_esp():
+  
+  #define que utilizaremos essa global
+  global stringIm
+
+  if environ.get("espurl"):
+    URL = environ.get("espurl") 
+  else:
+    URL = "https://www.skikelly.com/sf/liveview/?rand=123456789"
+  
+  #recebe a imagem
+  response = requests.get(URL)
+  img = Image.open(io.BytesIO(response.content))
+
+  #Converte para PNG
+  img.save('/tmp/temp.png')  
+  pilImage = Image.open('/tmp/temp.png')
+  
+  #grava a imagem na nossa variavel global em b64
+  buffered = io.BytesIO()
+  pilImage.save(buffered, format="PNG")
+  stringIm = base64.b64encode(buffered.getvalue())
+
+  return "Sucesso"
 
 
 @app.route('/current_image', methods=['GET'])
@@ -47,7 +70,8 @@ def see_image():
   
     global stringIm
     
-    #Convertendo nossa string b64 para um arquivo de imagem    
+    #Convertendo nossa string b64 para um arquivo de imagem
+
     imagemF = io.BytesIO(base64.b64decode(stringIm))
 
     imagemF.seek(0)    
@@ -66,47 +90,12 @@ def get_info():
         pilImage = Image.open(imagemF)
         pilImage.save('/tmp/current.png')
         
-        image = cv2.imread('/tmp/current.png')[:, :, ::-1]
-        #image = cv2.imread('img/pontual_4_new.png')[:, :, ::-1]
-        image = pre_processing(image)
-        data = decode(image)
-        viga = find_viga(data)
-        viga_reta = find_reta(data)
-        image = process_image(viga_reta, image)
-        all_data = decode_all(image)
-        apoio1, apoio2, pontual, distribuida, triangular = classify(all_data)
+        image = cv2.imread('/tmp/current.png')
+        #image = cv2.imread('img/capture (1) - boa.jpg')
+        a1, a2, p, d, t = decode(image)
+        apoios, cargas_p, cargas_d, cargas_t = format(a1, a2, p, d, t)
+        return jsonify(apoios = apoios, cargasP = cargas_p, cargasD = cargas_d, cargasT = cargas_t)
 
-        viga_data = interpret_viga(viga)
-        apoios_data = interpret_apoios(apoio1 + apoio2)
-        triangulares_data = interpret_triangular(triangular)
-        pontuais_data = interpret_pontual(pontual)
-        distribuidas_data = interpret_distribuida(distribuida)
-        tipo1 = {}
-        tipo2 = {}
-        tipo1["tipo"] = 0
-        tipo2["tipo"] = 1
-        apoios = []
-        for a in apoio2:
-            print(a)
-            apoios.append([tipo2, {"posicao_i": a[3][0][0]}, {"posicao_f": a[3][2][0]}])
-            apoios = copy.copy(apoios)
-        for a in apoio1:
-            apoios.append([tipo1, {"posicao_i": a[3][0][0]}, {"posicao_f": a[3][2][0]}])
-            apoios = copy.copy(apoios)
-        cargas_pontuais = []
-        for c in pontuais_data:
-            cargas_pontuais.append([{"posicao_i":c[1], "posicao_f":c[2], "modulo": c[0]}])
-
-        cargas_distribuidas = []
-        for c in distribuidas_data:
-            cargas_distribuidas.append([{"posicao_i":c[1], "posicao_f":c[2], "modulo": c[0]}])
-
-        cargas_triangulares = []
-        for c in triangulares_data:
-            print(c)
-            cargas_triangulares.append([{"posicao_i":c[1], "posicao_f":c[2], "modulo": c[0]}])
-
-        return jsonify(PosicaoViga = [{"inicial":viga_data[0]}, {"final": viga_data[1]}], apoios = apoios, cargasP = cargas_pontuais, cargasD = cargas_distribuidas, cargasT = cargas_triangulares)
     except:
         return "Erro ao extrair informações da viga."
 
