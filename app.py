@@ -44,7 +44,8 @@ def see_image():
   
     global stringIm
     
-    #Convertendo nossa string b64 para um arquivo de imagem    
+    #Convertendo nossa string b64 para um arquivo de imagem
+
     imagemF = io.BytesIO(base64.b64decode(stringIm))
 
     imagemF.seek(0)    
@@ -63,7 +64,8 @@ def get_info():
         pilImage = Image.open(imagemF)
         pilImage.save('/tmp/current.png')
         
-        image = cv2.imread('/tmp/current.png')[:, :, ::-1]
+        image = cv2.imread('/tmp/current.png')
+        #image = cv2.imread('img/capture (1) - boa.jpg')
         a1, a2, p, d, t = decode(image)
         apoios, cargas_p, cargas_d, cargas_t = format(a1, a2, p, d, t)
         return jsonify(apoios = apoios, cargasP = cargas_p, cargasD = cargas_d, cargasT = cargas_t)
