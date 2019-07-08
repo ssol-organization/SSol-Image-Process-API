@@ -9,7 +9,7 @@ def decode(image):
 
     h, w = image.shape[:2]
     image = image[:, :, ::-1]
-    s = int(w / 400)
+    s = int(w / 500)
     i = 0
     j = 1
     last_size = 0
