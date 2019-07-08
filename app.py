@@ -54,14 +54,10 @@ def receive_esp():
   #recebe a imagem
   response = requests.get(URL)
   img = Image.open(io.BytesIO(response.content))
-
-  #Converte para JPG
-  img.save('/tmp/temp.jpg')  
-  pilImage = Image.open('/tmp/temp.jpg')
   
   #grava a imagem na nossa variavel global em b64
   buffered = io.BytesIO()
-  pilImage.save(buffered, format="JPG")
+  img.save(buffered, format="JPEG")
   stringIm = base64.b64encode(buffered.getvalue())
 
   return "Sucesso"
