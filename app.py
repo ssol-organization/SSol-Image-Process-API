@@ -53,13 +53,13 @@ def receive_esp():
   response = requests.get(URL)
   img = Image.open(io.BytesIO(response.content))
 
-  #Converte para PNG
-  img.save('/tmp/temp.png')  
-  pilImage = Image.open('/tmp/temp.png')
+  #Converte para JPG
+  img.save('/tmp/temp.jpg')  
+  pilImage = Image.open('/tmp/temp.jpg')
   
   #grava a imagem na nossa variavel global em b64
   buffered = io.BytesIO()
-  pilImage.save(buffered, format="PNG")
+  pilImage.save(buffered, format="JPG")
   stringIm = base64.b64encode(buffered.getvalue())
 
   return "Sucesso"
@@ -76,7 +76,7 @@ def see_image():
 
     imagemF.seek(0)    
 
-    return send_file(imagemF, mimetype="image/png")  
+    return send_file(imagemF, mimetype="image/jpg")  
 
 
 
@@ -88,9 +88,9 @@ def get_info():
         #conversão da string para imagem e salvamento em diretorio temporario para leitura posterior
         imagemF = io.BytesIO(base64.b64decode(stringIm))
         pilImage = Image.open(imagemF)
-        pilImage.save('/tmp/current.png')
+        pilImage.save('/tmp/current.jpg')
         
-        image = cv2.imread('/tmp/current.png')
+        image = cv2.imread('/tmp/current.jpg')
         #image = cv2.imread('img/capture (1) - boa.jpg')
         a1, a2, p, d, t = decode(image)
         apoios, cargas_p, cargas_d, cargas_t = format(a1, a2, p, d, t)
