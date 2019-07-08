@@ -1,9 +1,11 @@
 from flask import Flask, jsonify, send_file, request
 from os import environ 
 from image_processing.decode import *
+from image_processing.format import *
+from image_processing.resize import *
 import io, base64
 from PIL import Image
-from image_processing.format import *
+
 import cv2
 import requests
 
@@ -90,8 +92,9 @@ def get_info():
         pilImage = Image.open(imagemF)
         pilImage.save('/tmp/current.jpg')
         
-        image = cv2.imread('/tmp/current.jpg')
-        #image = cv2.imread('img/capture (1) - boa.jpg')
+        open_image = cv2.imread('/tmp/current.jpg')
+        #open_image = cv2.imread('img/capture (1) - boa.jpg')
+        image = resize(open_image)
         a1, a2, p, d, t = decode(image)
         apoios, cargas_p, cargas_d, cargas_t = format(a1, a2, p, d, t)
         return jsonify(apoios = apoios, cargasP = cargas_p, cargasD = cargas_d, cargasT = cargas_t)
